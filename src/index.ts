@@ -3,6 +3,7 @@ import helmet from "helmet";
 import express from "express";
 import morgan from "morgan";
 import { errorHandlingMiddleware } from "../middlewares/errorHandler";
+import userRoutes from "../routes/userRoutes";
 import ApiError from "../utils/apiError";
 const app = express();
 //use pakage
@@ -16,17 +17,15 @@ app.use(compression());
 const PORT = process.env.PORT || 3000;
 
 //start-server
-app.get("/", (req, res) => {
-  res.send("lorem ipsum");
+app.use("/api", userRoutes);
+
+//error handler 404
+app.use((req, res, next) => {
+  const error = new ApiError(404, `Not Found - ${req.originalUrl}`);
+  next(error); // đẩy vào errorHandlingMiddleware
 });
-app.get("/error", (req, res) => {
-  if (!req.query.id) {
-    throw new ApiError(405, "no id");
-  }
-  res.status(200).json({ id: req.query.id });
-});
-//error handler
 app.use(errorHandlingMiddleware);
+//error handler
 app.listen(PORT, () => {
   console.log("Server is running on ", process.env.HOST + ":" + PORT);
 });
